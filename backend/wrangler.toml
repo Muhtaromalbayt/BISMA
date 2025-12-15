@@ -1,0 +1,8 @@
+name = "bisma-backend"
+main = "src/index.ts"
+compatibility_date = "2023-12-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "bisma-db"
+database_id = "dec6c1b2-886a-463f-be4f-2d2a510bd795"
