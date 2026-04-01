@@ -28,7 +28,8 @@ export default function Latihan() {
             { id: 3, pertanyaan: 'Hasil dari 1/4 + 1/4 adalah...', jawaban_benar: '1/2', opsi_a: '1/8', opsi_b: '2/8', opsi_c: '1/2', opsi_d: '1' }
         ];
 
-        fetch('http://localhost:8787/soal')
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8787';
+        fetch(`${apiUrl}/soal`)
             .then(res => res.json())
             .then(data => {
                 if (Array.isArray(data) && data.length > 0) {

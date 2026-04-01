@@ -1,3 +1,15 @@
+let audioCtx: AudioContext | null = null;
+
+function getAudioContext(): AudioContext | null {
+    if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContextClass) {
+            audioCtx = new AudioContextClass();
+        }
+    }
+    return audioCtx;
+}
+
 /**
  * Memainkan nada berdasarkan nilai pecahan.
  * Semakin besar nilai pecahan, semakin tinggi pitchnya.
@@ -8,18 +20,17 @@ export function fractionToPitch(numerator: number, denominator: number) {
     if (denominator === 0) return;
 
     const value = numerator / denominator;
-
-    // Base frequency (C4)
-    const baseFreq = 261.63;
-
-    // Mapping value (0 - 1+) to frequency
-    // Kita buat range 1 oktaf untuk 0 sampai 1
+    const baseFreq = 261.63; // Base frequency (C4)
     const freq = baseFreq * (1 + value);
 
-    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContext) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
 
-    const ctx = new AudioContext();
+    // Resuming context if it was suspended (browser policy)
+    if (ctx.state === 'suspended') {
+        ctx.resume();
+    }
+
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 

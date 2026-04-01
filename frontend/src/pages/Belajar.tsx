@@ -25,7 +25,8 @@ export default function Belajar() {
         ];
 
         // Try fetch but fall back quickly
-        fetch('http://localhost:8787/materi')
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8787';
+        fetch(`${apiUrl}/materi`)
             .then(res => res.json())
             .then(data => {
                 if (Array.isArray(data) && data.length > 0) {

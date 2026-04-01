@@ -99,4 +99,39 @@ app.post('/content', async (c) => {
     }
 });
 
+// --- MATERI ---
+
+app.get('/materi', async (c) => {
+    try {
+        const { results } = await c.env.DB.prepare('SELECT * FROM materi ORDER BY urutan ASC').all();
+        return c.json(results);
+    } catch (e) {
+        console.error(e);
+        return c.json({ error: 'Failed to fetch materi' }, 500);
+    }
+});
+
+// --- SOAL / LATIHAN ---
+
+app.get('/soal', async (c) => {
+    try {
+        const { results } = await c.env.DB.prepare('SELECT * FROM soal').all();
+        return c.json(results);
+    } catch (e) {
+        console.error(e);
+        return c.json({ error: 'Failed to fetch soal' }, 500);
+    }
+});
+
+app.get('/soal/:materiId', async (c) => {
+    const materiId = c.req.param('materiId');
+    try {
+        const { results } = await c.env.DB.prepare('SELECT * FROM soal WHERE materi_id = ?').bind(materiId).all();
+        return c.json(results);
+    } catch (e) {
+        console.error(e);
+        return c.json({ error: 'Failed to fetch soal for materi' }, 500);
+    }
+});
+
 export default app;
