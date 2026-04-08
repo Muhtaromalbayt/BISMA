@@ -7,21 +7,20 @@ export default {
     theme: {
         extend: {
             colors: {
-                // New "Obsidian & Electric" Theme
-                obsidian: '#050505',       // Deepest Black/Grey
-                'obsidian-light': '#121212', // Surface
-                electric: '#CCFF00',       // High-Voltage Lime
-                'electric-dim': '#A3CC00',
-                neon: '#00F0FF',           // Cyber Cyan
-                ash: '#888888',            // Muted Text
-                'ash-light': '#E5E5E5',    // Primary Text
-                
-                // Keep semantic names mapped to new theme
-                primary: '#CCFF00',        // Lime as primary action
-                secondary: '#00F0FF',      // Cyan as secondary
-                accent: '#FFFFFF',         // White as stark accent
-                background: '#050505',
-                surface: '#121212',
+                // Blue & White Theme (BISMA)
+                primary: {
+                    DEFAULT: '#1A56DB',   // UPI Royal Blue
+                    dark: '#1040B8',      // Darker blue for hover
+                    light: '#3B82F6',     // Lighter blue accent
+                },
+                secondary: '#0EA5E9',     // Sky blue
+                accent:    '#F59E0B',     // Amber for highlights
+                background: '#F0F4FF',    // Very light blue-white bg
+                surface:   '#FFFFFF',     // White surface
+                muted:     '#64748B',     // Slate grey text
+                'muted-light': '#94A3B8', // Light grey
+                dark:      '#1E293B',     // Dark for text
+                'dark-light': '#334155',
             },
             fontFamily: {
                 sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
@@ -37,21 +36,20 @@ export default {
                 'body': ['1rem', { lineHeight: '1.6' }],
             },
             backgroundImage: {
-                'cyber-grid': "linear-gradient(to right, #1a1a1a 1px, transparent 1px), linear-gradient(to bottom, #1a1a1a 1px, transparent 1px)",
-                'noise': "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E\")",
+                'dot-grid': "radial-gradient(circle, #1A56DB22 1px, transparent 1px)",
             },
             animation: {
-                'glow': 'glow 2s ease-in-out infinite alternate',
-                'float': 'float 6s ease-in-out infinite',
+                'fade-in': 'fadeIn 0.4s ease-out',
+                'slide-up': 'slideUp 0.4s ease-out',
             },
             keyframes: {
-                glow: {
-                    '0%': { boxShadow: '0 0 5px #CCFF0020' },
-                    '100%': { boxShadow: '0 0 20px #CCFF0060, 0 0 10px #CCFF00' },
+                fadeIn: {
+                    '0%': { opacity: '0' },
+                    '100%': { opacity: '1' },
                 },
-                float: {
-                    '0%, 100%': { transform: 'translateY(0)' },
-                    '50%': { transform: 'translateY(-10px)' },
+                slideUp: {
+                    '0%': { opacity: '0', transform: 'translateY(8px)' },
+                    '100%': { opacity: '1', transform: 'translateY(0)' },
                 },
             },
         },

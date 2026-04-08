@@ -20,6 +20,7 @@
 
 ### Backend & Database
 - **Serverless**: Cloudflare Workers + Hono
+- **ORM**: Drizzle ORM (Type-safe database access)
 - **Database**: Cloudflare D1 (SQL-based edge database)
 - **Storage/Static**: Cloudflare Pages
 
@@ -49,4 +50,6 @@ bisma/
 MIT License - Open for educational refinement.
 
 ---
+---
+*Project maintained with high TypeScript strictness and modern database patterns.*
 *Dibuat untuk mendukung pendidikan inklusif di Indonesia.*

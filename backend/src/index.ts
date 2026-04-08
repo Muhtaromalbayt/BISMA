@@ -1,5 +1,8 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { drizzle } from 'drizzle-orm/d1';
+import { eq, asc } from 'drizzle-orm';
+import * as schema from './db/schema';
 
 type Bindings = {
     DB: D1Database;
@@ -10,15 +13,20 @@ const app = new Hono<{ Bindings: Bindings }>();
 app.use('/*', cors());
 
 app.get('/', (c) => {
-    return c.text('BISMA Backend API is running!');
+    return c.text('BISMA Backend API with Drizzle ORM is running!');
 });
 
 // --- AUTH ---
 
 app.post('/login', async (c) => {
     const { username, password } = await c.req.json();
+    const db = drizzle(c.env.DB, { schema });
+    
     try {
-        const admin: any = await c.env.DB.prepare('SELECT * FROM admins WHERE username = ? AND password = ?').bind(username, password).first();
+        const admin = await db.query.admins.findFirst({
+            where: (admins, { and, eq }) => and(eq(admins.username, username), eq(admins.password, password)),
+        });
+
         if (admin) {
             return c.json({ success: true, token: 'authenticated_token_' + Date.now() });
         } else {
@@ -36,38 +44,48 @@ app.post('/login', async (c) => {
 // --- RULES ---
 
 app.get('/rules', async (c) => {
+    const db = drizzle(c.env.DB, { schema });
     try {
-        const { results } = await c.env.DB.prepare('SELECT * FROM rules').all();
+        const results = await db.select().from(schema.rules).all();
         // Parse JSON examples
-        const parsedRules = results.map((r: any) => ({
+        const parsedRules = results.map((r) => ({
             ...r,
-            examples: JSON.parse(r.examples)
+            examples: r.examples ? JSON.parse(r.examples) : []
         }));
         return c.json(parsedRules);
     } catch (e) {
         console.error(e);
-        return c.json([], 200); // Return empty array on error (e.g. table not found)
+        return c.json([], 200); 
     }
 });
 
 app.post('/rules', async (c) => {
-    const rules = await c.req.json(); // Expecting array of rules
+    const rulesData = await c.req.json();
+    const db = drizzle(c.env.DB, { schema });
 
-    if (!Array.isArray(rules)) {
+    if (!Array.isArray(rulesData)) {
         return c.json({ error: 'Expected array of rules' }, 400);
     }
 
     try {
-        // Transaction to replace all rules
-        const batch = [
-            c.env.DB.prepare('DELETE FROM rules'),
-            ...rules.map((r: any) =>
-                c.env.DB.prepare('INSERT INTO rules (id, title, iconName, description, explanation, examples) VALUES (?, ?, ?, ?, ?, ?)')
-                    .bind(r.id, r.title, r.iconName, r.description, r.explanation, JSON.stringify(r.examples))
-            )
-        ];
+        // Unfortunately D1 batch in Drizzle is a bit different, 
+        // we can use the underlying D1 batch or sequence them.
+        // For simplicity and safety, we'll try to use a transaction-like approach if possible, 
+        // but D1 doesn't support real transactions well outside of batch.
+        
+        await db.delete(schema.rules).run();
+        
+        if (rulesData.length > 0) {
+            await db.insert(schema.rules).values(rulesData.map(r => ({
+                id: r.id,
+                title: r.title,
+                iconName: r.iconName,
+                description: r.description,
+                explanation: r.explanation,
+                examples: JSON.stringify(r.examples)
+            }))).run();
+        }
 
-        await c.env.DB.batch(batch);
         return c.json({ success: true });
     } catch (e) {
         console.error(e);
@@ -78,12 +96,15 @@ app.post('/rules', async (c) => {
 // --- CONTENT SETTINGS ---
 
 app.get('/content', async (c) => {
+    const db = drizzle(c.env.DB, { schema });
     try {
-        const result: any = await c.env.DB.prepare("SELECT data FROM content_settings WHERE id = 'default'").first();
+        const result = await db.query.contentSettings.findFirst({
+            where: eq(schema.contentSettings.id, 'default'),
+        });
         if (result) {
             return c.json(JSON.parse(result.data));
         }
-        return c.json(null); // No settings saved yet
+        return c.json(null);
     } catch (e) {
         return c.json(null);
     }
@@ -91,10 +112,18 @@ app.get('/content', async (c) => {
 
 app.post('/content', async (c) => {
     const content = await c.req.json();
+    const db = drizzle(c.env.DB, { schema });
     try {
-        await c.env.DB.prepare("INSERT OR REPLACE INTO content_settings (id, data) VALUES ('default', ?)").bind(JSON.stringify(content)).run();
+        await db.insert(schema.contentSettings)
+            .values({ id: 'default', data: JSON.stringify(content) })
+            .onConflictDoUpdate({
+                target: schema.contentSettings.id,
+                set: { data: JSON.stringify(content) }
+            })
+            .run();
         return c.json({ success: true });
     } catch (e) {
+        console.error(e);
         return c.json({ error: 'Failed to save content settings' }, 500);
     }
 });
@@ -102,8 +131,9 @@ app.post('/content', async (c) => {
 // --- MATERI ---
 
 app.get('/materi', async (c) => {
+    const db = drizzle(c.env.DB, { schema });
     try {
-        const { results } = await c.env.DB.prepare('SELECT * FROM materi ORDER BY urutan ASC').all();
+        const results = await db.select().from(schema.materi).orderBy(asc(schema.materi.urutan)).all();
         return c.json(results);
     } catch (e) {
         console.error(e);
@@ -114,8 +144,9 @@ app.get('/materi', async (c) => {
 // --- SOAL / LATIHAN ---
 
 app.get('/soal', async (c) => {
+    const db = drizzle(c.env.DB, { schema });
     try {
-        const { results } = await c.env.DB.prepare('SELECT * FROM soal').all();
+        const results = await db.select().from(schema.soal).all();
         return c.json(results);
     } catch (e) {
         console.error(e);
@@ -124,9 +155,10 @@ app.get('/soal', async (c) => {
 });
 
 app.get('/soal/:materiId', async (c) => {
-    const materiId = c.req.param('materiId');
+    const materiId = parseInt(c.req.param('materiId'));
+    const db = drizzle(c.env.DB, { schema });
     try {
-        const { results } = await c.env.DB.prepare('SELECT * FROM soal WHERE materi_id = ?').bind(materiId).all();
+        const results = await db.select().from(schema.soal).where(eq(schema.soal.materiId, materiId)).all();
         return c.json(results);
     } catch (e) {
         console.error(e);

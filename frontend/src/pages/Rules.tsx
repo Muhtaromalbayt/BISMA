@@ -87,7 +87,6 @@ const verbosityOptions = [
     { value: 'compare' as VerbosityLevel, label: 'Bandingkan Semua', shortLabel: 'Compare', description: 'Tampilkan semua tingkat verbosity' }
 ];
 
-// Helper to get icon component (since we can't store functions in JSON)
 const getIcon = (iconName: string) => {
     switch (iconName) {
         case 'Hash': return Hash;
@@ -99,12 +98,10 @@ const getIcon = (iconName: string) => {
 };
 
 export default function Rules() {
-    // Load rules from localStorage or use defaults
     const [rules] = useState<Rule[]>(() => {
         const saved = localStorage.getItem('bisma_rules');
         if (saved) {
             const parsed = JSON.parse(saved);
-            // Re-attach icons
             return parsed.map((r: any) => ({
                 ...r,
                 icon: getIcon(r.iconName || 'BookOpen')
@@ -122,18 +119,15 @@ export default function Rules() {
 
     const toMathSpeakWithVerbosity = (expression: string, level: VerbosityLevel): string => {
         const fullText = toMathSpeak(expression);
-
-        if (level === 'verbose') {
-            return fullText;
-        } else if (level === 'brief') {
-            // Brief: Remove "Mulai" and "Selesai" but keep "Per"
+        if (level === 'verbose') return fullText;
+        if (level === 'brief') {
             return fullText
                 .replace(/Mulai Pecahan,?\s*/gi, '')
                 .replace(/,?\s*Selesai Pecahan/gi, '')
                 .replace(/Mulai Mulai Pecahan,?\s*/gi, '')
                 .replace(/,?\s*Selesai Selesai Pecahan/gi, '');
-        } else if (level === 'superbrief') {
-            // Superbrief: Only keep numbers and "per"
+        }
+        if (level === 'superbrief') {
             return fullText
                 .replace(/Mulai Pecahan,?\s*/gi, '')
                 .replace(/,?\s*Selesai Pecahan/gi, '')
@@ -143,7 +137,6 @@ export default function Rules() {
                 .replace(/Per,?\s*/gi, 'per ')
                 .replace(/,\s*/g, ' ');
         }
-
         return fullText;
     };
 
@@ -156,20 +149,16 @@ export default function Rules() {
     };
 
     return (
-        <div className="min-h-screen bg-obsidian font-sans pb-20">
+        <div className="min-h-screen bg-background font-sans pb-20">
             {/* Page Header */}
-            <div className="relative overflow-hidden py-16 px-4 border-b border-white/10">
-                {/* Background Effects */}
-                <div className="absolute inset-0 bg-cyber-grid opacity-10 z-0"></div>
-                <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-electric/5 blur-[80px] rounded-full"></div>
-
-                <div className="container mx-auto text-center relative z-10">
-                    <div className="inline-flex items-center gap-2 px-4 py-1 bg-electric/10 border border-electric/30 text-electric text-xs font-mono font-bold mb-4 uppercase tracking-widest">
+            <div className="relative overflow-hidden py-16 px-4 bg-gradient-to-br from-primary to-primary-dark text-white">
+                <div className="container mx-auto text-center">
+                    <div className="inline-flex items-center gap-2 px-4 py-1 bg-white/20 text-white/90 text-xs font-mono font-bold mb-4 uppercase tracking-widest rounded-full">
                         <BookOpen size={14} />
                         Panduan Lengkap
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-display font-bold text-white mb-4 uppercase tracking-wide">Aturan Baca Standar</h1>
-                    <p className="text-lg text-ash max-w-2xl mx-auto">
+                    <h1 className="text-4xl md:text-5xl font-display font-bold text-white mb-4">Aturan Baca Standar</h1>
+                    <p className="text-lg text-white/80 max-w-2xl mx-auto">
                         Panduan sintaks audio BISMA untuk berbagai struktur pecahan matematika
                     </p>
                 </div>
@@ -180,17 +169,17 @@ export default function Rules() {
 
                     {/* Sidebar Navigation */}
                     <div className="lg:col-span-3">
-                        <div className="glass-panel p-2 sticky top-24">
+                        <div className="glass-panel p-2 sticky top-24 rounded-xl">
                             <div className="px-3 py-2 mb-2">
-                                <p className="text-xs font-bold text-ash/50 uppercase tracking-widest font-mono">Kategori</p>
+                                <p className="text-xs font-bold text-muted uppercase tracking-widest font-mono">Kategori</p>
                             </div>
-                            {rules.map(rule => (
+                            {rules.map((rule: Rule) => (
                                 <button
                                     key={rule.id}
                                     onClick={() => setSelectedRule(rule.id)}
-                                    className={`w-full text-left px-4 py-3 rounded-none transition-all font-bold flex items-center gap-3 mb-1 uppercase tracking-wide text-xs ${selectedRule === rule.id
-                                        ? 'bg-electric text-obsidian border-l-4 border-obsidian'
-                                        : 'text-ash hover:bg-white/5 hover:text-white hover:border-l-4 hover:border-electric'
+                                    className={`w-full text-left px-4 py-3 rounded-lg transition-all font-bold flex items-center gap-3 mb-1 text-xs ${selectedRule === rule.id
+                                        ? 'bg-primary text-white'
+                                        : 'text-muted hover:bg-primary/10 hover:text-primary'
                                         }`}
                                 >
                                     <rule.icon size={18} />
@@ -203,40 +192,39 @@ export default function Rules() {
 
                     {/* Main Content */}
                     <div className="lg:col-span-9">
-                        <div className="glass-panel p-6 md:p-8 min-h-[600px]">
+                        <div className="glass-panel p-6 md:p-8 min-h-[600px] rounded-xl">
 
                             {/* Rule Info */}
-                            <div className="mb-8 border-b border-white/10 pb-6">
+                            <div className="mb-8 border-b border-muted/20 pb-6">
                                 <div className="flex items-center gap-4 mb-6">
-                                    <div className="p-3 bg-electric/10 border border-electric/30 text-electric rounded-none">
+                                    <div className="p-3 bg-primary/10 text-primary rounded-xl">
                                         <currentRule.icon size={32} />
                                     </div>
                                     <div>
-                                        <h2 className="text-2xl font-display font-bold text-white uppercase tracking-wide">{currentRule.title}</h2>
-                                        <p className="text-ash/80">{currentRule.description}</p>
+                                        <h2 className="text-2xl font-display font-bold text-dark">{currentRule.title}</h2>
+                                        <p className="text-muted">{currentRule.description}</p>
                                     </div>
                                 </div>
 
-                                <div className="bg-obsidian p-5 border border-white/10 flex gap-3 mb-6 relative overflow-hidden">
-                                    <div className="absolute top-0 left-0 w-1 h-full bg-electric"></div>
-                                    <Info className="text-electric flex-shrink-0 mt-0.5" size={20} />
-                                    <p className="text-ash-light leading-relaxed">{currentRule.explanation}</p>
+                                <div className="bg-primary/5 p-5 border border-primary/20 flex gap-3 mb-6 rounded-xl">
+                                    <Info className="text-primary flex-shrink-0 mt-0.5" size={20} />
+                                    <p className="text-dark leading-relaxed">{currentRule.explanation}</p>
                                 </div>
 
                                 {/* Verbosity Settings */}
-                                <div className="bg-white/5 border border-white/10 p-4 mb-4">
+                                <div className="bg-background border border-muted/20 p-4 mb-4 rounded-xl">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <Settings className="text-neon" size={18} />
-                                        <label className="text-xs font-bold text-white uppercase tracking-widest">Tingkat Verbosity (Detail)</label>
+                                        <Settings className="text-secondary" size={18} />
+                                        <label className="text-xs font-bold text-dark uppercase tracking-widest">Tingkat Verbosity (Detail)</label>
                                     </div>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                        {verbosityOptions.map(option => (
+                                        {verbosityOptions.map((option: { value: VerbosityLevel, label: string, shortLabel: string, description: string }) => (
                                             <button
                                                 key={option.value}
                                                 onClick={() => setVerbosity(option.value)}
-                                                className={`px-3 py-2 text-xs font-bold transition-all uppercase tracking-wider border ${verbosity === option.value
-                                                    ? 'bg-neon/20 text-neon border-neon'
-                                                    : 'bg-transparent text-ash border-white/10 hover:border-neon hover:text-neon'
+                                                className={`px-3 py-2 text-xs font-bold transition-all rounded-lg border ${verbosity === option.value
+                                                    ? 'bg-secondary/20 text-secondary border-secondary'
+                                                    : 'bg-transparent text-muted border-muted/20 hover:border-secondary hover:text-secondary'
                                                     }`}
                                                 title={option.description}
                                             >
@@ -244,25 +232,25 @@ export default function Rules() {
                                             </button>
                                         ))}
                                     </div>
-                                    <p className="text-xs text-ash mt-2 font-mono">
+                                    <p className="text-xs text-muted mt-2 font-mono">
                                         {verbosityOptions.find(o => o.value === verbosity)?.description}
                                     </p>
                                 </div>
 
                                 {/* Audio Speed Control */}
-                                <div className="bg-white/5 border border-white/10 p-4">
+                                <div className="bg-background border border-muted/20 p-4 rounded-xl">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <Gauge className="text-electric" size={18} />
-                                        <label className="text-xs font-bold text-white uppercase tracking-widest">Kecepatan Audio</label>
+                                        <Gauge className="text-primary" size={18} />
+                                        <label className="text-xs font-bold text-dark uppercase tracking-widest">Kecepatan Audio</label>
                                     </div>
                                     <div className="flex flex-wrap gap-2">
-                                        {speedOptions.map(option => (
+                                        {speedOptions.map((option: { value: number, label: string }) => (
                                             <button
                                                 key={option.value}
                                                 onClick={() => setAudioSpeed(option.value)}
-                                                className={`px-4 py-2 text-xs font-bold transition-all uppercase tracking-wider border ${audioSpeed === option.value
-                                                    ? 'bg-electric text-obsidian border-electric'
-                                                    : 'bg-transparent text-ash border-white/10 hover:border-electric hover:text-electric'
+                                                className={`px-4 py-2 text-xs font-bold transition-all rounded-lg border ${audioSpeed === option.value
+                                                    ? 'bg-primary text-white border-primary'
+                                                    : 'bg-transparent text-muted border-muted/20 hover:border-primary hover:text-primary'
                                                     }`}
                                             >
                                                 {option.label}
@@ -274,37 +262,32 @@ export default function Rules() {
 
                             {/* Examples Grid */}
                             <div className="space-y-6">
-                                {currentRule.examples.map((example, index) => {
+                                {currentRule.examples.map((example: Example, index: number) => {
                                     const isPlaying = playingIndex === index;
 
                                     if (verbosity === 'compare') {
-                                        // Compare mode: show all three verbosity levels
                                         return (
-                                            <div key={index} className="bg-obsidian border border-white/10 overflow-hidden">
-                                                {/* Math Expression Header */}
-                                                <div className="bg-white/5 p-4 border-b border-white/10 flex items-center justify-center">
-                                                    <MathRenderer expression={example.expression} className="text-3xl text-white font-bold" />
+                                            <div key={index} className="bg-background border border-muted/20 overflow-hidden rounded-xl">
+                                                <div className="bg-primary/10 p-4 border-b border-muted/20 flex items-center justify-center">
+                                                    <MathRenderer expression={example.expression} className="text-3xl text-dark font-bold" />
                                                 </div>
-
-                                                {/* Comparison Grid */}
-                                                <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/10">
+                                                <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-muted/20">
                                                     {['verbose', 'brief', 'superbrief'].map((level) => {
                                                         const levelText = toMathSpeakWithVerbosity(example.expression, level as VerbosityLevel);
                                                         const levelOption = verbosityOptions.find(o => o.value === level);
-
                                                         return (
                                                             <div key={level} className="p-4">
                                                                 <div className="mb-2">
-                                                                    <span className="inline-block px-2 py-1 bg-neon/10 text-neon border border-neon/30 text-[10px] font-bold font-mono uppercase tracking-wider">
+                                                                    <span className="inline-block px-2 py-1 bg-secondary/10 text-secondary border border-secondary/30 text-[10px] font-bold font-mono uppercase tracking-wider rounded">
                                                                         {levelOption?.shortLabel}
                                                                     </span>
                                                                 </div>
-                                                                <p className="text-sm text-ash-light leading-relaxed mb-3 font-mono">
+                                                                <p className="text-sm text-dark leading-relaxed mb-3 font-mono">
                                                                     "{levelText}"
                                                                 </p>
                                                                 <button
                                                                     onClick={() => handlePlay(example.expression, index, level as VerbosityLevel)}
-                                                                    className="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-neon hover:text-obsidian border border-white/10 hover:border-neon text-neon transition-colors text-xs font-bold uppercase tracking-wider w-full justify-center"
+                                                                    className="flex items-center gap-2 px-3 py-2 bg-secondary/10 hover:bg-secondary hover:text-white border border-secondary/30 text-secondary transition-colors text-xs font-bold rounded-lg w-full justify-center"
                                                                 >
                                                                     {isPlaying ? <Volume2 size={14} className="animate-pulse" /> : <PlayCircle size={14} />}
                                                                     Dengar
@@ -313,10 +296,9 @@ export default function Rules() {
                                                         );
                                                     })}
                                                 </div>
-
                                                 {example.note && (
-                                                    <div className="bg-white/5 p-3 border-t border-white/10 text-center">
-                                                        <div className="inline-flex items-center gap-2 text-xs text-ash font-mono">
+                                                    <div className="bg-primary/5 p-3 border-t border-muted/20 text-center">
+                                                        <div className="inline-flex items-center gap-2 text-xs text-muted font-mono">
                                                             <Info size={12} />
                                                             <span>{example.note}</span>
                                                         </div>
@@ -325,48 +307,40 @@ export default function Rules() {
                                             </div>
                                         );
                                     } else {
-                                        // Single verbosity mode
                                         const mathSpeakText = toMathSpeakWithVerbosity(example.expression, verbosity);
-
                                         return (
-                                            <div key={index} className="bg-obsidian border border-white/10 hover:border-electric transition-colors overflow-hidden group">
+                                            <div key={index} className="bg-background border border-muted/20 hover:border-primary transition-colors overflow-hidden group rounded-xl">
                                                 <div className="flex flex-col md:flex-row">
-
-                                                    {/* Visual Part */}
-                                                    <div className="w-full md:w-48 bg-white/5 p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-white/10 group-hover:bg-electric/5 transition-colors">
-                                                        <MathRenderer expression={example.expression} className="text-2xl text-white font-bold" />
+                                                    <div className="w-full md:w-48 bg-primary/5 p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-muted/20 group-hover:bg-primary/10 transition-colors">
+                                                        <MathRenderer expression={example.expression} className="text-2xl text-dark font-bold" />
                                                         <button
                                                             onClick={() => handlePlay(example.expression, index)}
-                                                            className="mt-4 flex items-center gap-2 px-4 py-2 bg-electric text-obsidian text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-obsidian transition-colors shadow-lg"
+                                                            className="mt-4 flex items-center gap-2 px-4 py-2 bg-primary text-white text-xs font-bold uppercase tracking-widest hover:bg-primary-dark transition-colors shadow-md rounded-lg"
                                                         >
                                                             {isPlaying ? <Volume2 size={16} className="animate-pulse" /> : <PlayCircle size={16} />}
                                                             {isPlaying ? 'Putar...' : 'Dengar'}
                                                         </button>
                                                     </div>
 
-                                                    {/* Text Part */}
                                                     <div className="flex-1 p-5 flex flex-col justify-center">
                                                         <div className="mb-2 flex justify-between items-center">
-                                                            <div className="text-xs font-bold text-ash/50 uppercase tracking-widest font-mono">
+                                                            <div className="text-xs font-bold text-muted uppercase tracking-widest font-mono">
                                                                 Transkripsi ({verbosityOptions.find(o => o.value === verbosity)?.shortLabel})
                                                             </div>
                                                             {example.note && (
-                                                                <span className="text-[10px] text-electric uppercase tracking-wider font-bold border border-electric/30 px-2 py-0.5 bg-electric/10">
+                                                                <span className="text-[10px] text-primary uppercase tracking-wider font-bold border border-primary/30 px-2 py-0.5 bg-primary/10 rounded">
                                                                     {example.note}
                                                                 </span>
                                                             )}
                                                         </div>
-
-                                                        <p className="text-lg font-normal text-ash-light leading-relaxed font-mono">
+                                                        <p className="text-lg font-normal text-dark leading-relaxed font-mono">
                                                             "{mathSpeakText}"
                                                         </p>
                                                     </div>
                                                 </div>
-
-                                                {/* Progress Bar */}
                                                 {isPlaying && (
-                                                    <div className="h-0.5 bg-electric/30 w-full">
-                                                        <div className="h-full bg-electric animate-[width_2s_linear_forwards]" style={{ width: '100%' }}></div>
+                                                    <div className="h-1 bg-primary/20 w-full">
+                                                        <div className="h-full bg-primary animate-[width_2s_linear_forwards]" style={{ width: '100%' }}></div>
                                                     </div>
                                                 )}
                                             </div>
@@ -374,7 +348,6 @@ export default function Rules() {
                                     }
                                 })}
                             </div>
-
                         </div>
                     </div>
                 </div>

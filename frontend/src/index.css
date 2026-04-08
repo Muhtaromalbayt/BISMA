@@ -10,32 +10,28 @@
   }
 
   body {
-    background-color: #050505;
-    color: #E5E5E5;
-    background-image: 
-        radial-gradient(circle at 15% 50%, rgba(204, 255, 0, 0.03) 0%, transparent 25%),
-        radial-gradient(circle at 85% 30%, rgba(0, 240, 255, 0.03) 0%, transparent 25%);
+    background-color: #F0F4FF;
+    color: #1E293B;
     min-height: 100vh;
     overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Oswald', sans-serif;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
+    letter-spacing: 0.01em;
   }
 }
 
 @layer components {
     .glass-panel {
-        @apply bg-obsidian-light/60 backdrop-blur-md border border-white/5;
+        @apply bg-white/80 backdrop-blur-md border border-primary/10 shadow-sm;
     }
-    
+
     .btn-primary {
-        @apply bg-electric text-obsidian font-bold px-6 py-3 rounded-none uppercase tracking-wider hover:bg-electric-dim transition-all hover:scale-105 active:scale-95;
+        @apply bg-primary text-white font-bold px-6 py-3 rounded-lg uppercase tracking-wider hover:bg-primary-dark transition-all hover:scale-105 active:scale-95 shadow-md shadow-primary/20;
     }
 
     .btn-outline {
-        @apply border border-electric text-electric font-bold px-6 py-3 rounded-none uppercase tracking-wider hover:bg-electric hover:text-obsidian transition-all;
+        @apply border-2 border-primary text-primary font-bold px-6 py-3 rounded-lg uppercase tracking-wider hover:bg-primary hover:text-white transition-all;
     }
 }

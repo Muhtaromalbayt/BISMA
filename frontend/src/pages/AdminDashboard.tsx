@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, LogOut, Save, FileText, Layout, MessageSquare, BookOpen, Plus, Trash2, Edit2, X, Terminal, ChevronRight } from 'lucide-react';
+import { Shield, LogOut, Save, FileText, Layout, MessageSquare, BookOpen, Plus, Trash2, Edit2, X, Terminal } from 'lucide-react';
 
 // Interfaces
 interface ContentSettings {
@@ -140,7 +140,7 @@ export default function AdminDashboard() {
     };
 
     const updateContent = (field: keyof ContentSettings, value: string | string[]) => {
-        setContent(prev => ({ ...prev, [field]: value }));
+        setContent((prev: ContentSettings) => ({ ...prev, [field]: value }));
     };
 
     const updateAcademicInfo = (index: number, value: string) => {
@@ -166,7 +166,7 @@ export default function AdminDashboard() {
 
     const handleDeleteRule = (id: string) => {
         if (window.confirm('Delete this rule permanently?')) {
-            setRules(rules.filter(r => r.id !== id));
+            setRules(rules.filter((r: Rule) => r.id !== id));
             if (editingRuleId === id) {
                 setEditingRuleId(null);
                 setTempRule(null);
@@ -181,7 +181,7 @@ export default function AdminDashboard() {
 
     const saveRuleEdit = () => {
         if (tempRule) {
-            setRules(rules.map(r => r.id === tempRule.id ? tempRule : r));
+            setRules(rules.map((r: Rule) => r.id === tempRule.id ? tempRule : r));
             setEditingRuleId(null);
             setTempRule(null);
         }
@@ -211,7 +211,7 @@ export default function AdminDashboard() {
 
     const removeExampleFromTempRule = (index: number) => {
         if (tempRule) {
-            const newExamples = tempRule.examples.filter((_, i) => i !== index);
+            const newExamples = tempRule.examples.filter((_, i: number) => i !== index);
             setTempRule({ ...tempRule, examples: newExamples });
         }
     };
@@ -314,11 +314,11 @@ export default function AdminDashboard() {
                                     <div className="space-y-4">
                                         <div>
                                             <label className="block text-[10px] font-bold text-ash uppercase tracking-widest mb-2 font-mono">App Title</label>
-                                            <input type="text" value={content.headerTitle} onChange={(e) => updateContent('headerTitle', e.target.value)} className="w-full px-4 py-3 bg-obsidian border border-white/10 focus:border-electric focus:outline-none text-white font-mono text-sm" />
+                                            <input type="text" value={content.headerTitle} onChange={(e: ChangeEvent<HTMLInputElement>) => updateContent('headerTitle', e.target.value)} className="w-full px-4 py-3 bg-obsidian border border-white/10 focus:border-electric focus:outline-none text-white font-mono text-sm" />
                                         </div>
                                         <div>
                                             <label className="block text-[10px] font-bold text-ash uppercase tracking-widest mb-2 font-mono">Subtitle</label>
-                                            <input type="text" value={content.headerSubtitle} onChange={(e) => updateContent('headerSubtitle', e.target.value)} className="w-full px-4 py-3 bg-obsidian border border-white/10 focus:border-electric focus:outline-none text-white font-mono text-sm" />
+                                            <input type="text" value={content.headerSubtitle} onChange={(e: ChangeEvent<HTMLInputElement>) => updateContent('headerSubtitle', e.target.value)} className="w-full px-4 py-3 bg-obsidian border border-white/10 focus:border-electric focus:outline-none text-white font-mono text-sm" />
                                         </div>
                                     </div>
                                 </div>
@@ -334,15 +334,15 @@ export default function AdminDashboard() {
                                     <div className="space-y-4">
                                         <div>
                                             <label className="block text-[10px] font-bold text-ash uppercase tracking-widest mb-2 font-mono">Main Title</label>
-                                            <input type="text" value={content.heroTitle} onChange={(e) => updateContent('heroTitle', e.target.value)} className="w-full px-4 py-3 bg-obsidian border border-white/10 focus:border-electric focus:outline-none text-white text-xl font-bold" />
+                                            <input type="text" value={content.heroTitle} onChange={(e: ChangeEvent<HTMLInputElement>) => updateContent('heroTitle', e.target.value)} className="w-full px-4 py-3 bg-obsidian border border-white/10 focus:border-electric focus:outline-none text-white text-xl font-bold" />
                                         </div>
                                         <div>
                                             <label className="block text-[10px] font-bold text-ash uppercase tracking-widest mb-2 font-mono">Hero Subtitle</label>
-                                            <input type="text" value={content.heroSubtitle} onChange={(e) => updateContent('heroSubtitle', e.target.value)} className="w-full px-4 py-3 bg-obsidian border border-white/10 focus:border-electric focus:outline-none text-white font-mono text-sm" />
+                                            <input type="text" value={content.heroSubtitle} onChange={(e: ChangeEvent<HTMLInputElement>) => updateContent('heroSubtitle', e.target.value)} className="w-full px-4 py-3 bg-obsidian border border-white/10 focus:border-electric focus:outline-none text-white font-mono text-sm" />
                                         </div>
                                         <div>
                                             <label className="block text-[10px] font-bold text-ash uppercase tracking-widest mb-2 font-mono">Description</label>
-                                            <textarea value={content.heroDescription} onChange={(e) => updateContent('heroDescription', e.target.value)} rows={4} className="w-full px-4 py-3 bg-obsidian border border-white/10 focus:border-electric focus:outline-none text-ash-light font-sans text-sm resize-none" />
+                                            <textarea value={content.heroDescription} onChange={(e: ChangeEvent<HTMLTextAreaElement>) => updateContent('heroDescription', e.target.value)} rows={4} className="w-full px-4 py-3 bg-obsidian border border-white/10 focus:border-electric focus:outline-none text-ash-light font-sans text-sm resize-none" />
                                         </div>
                                     </div>
                                 </div>
@@ -358,17 +358,17 @@ export default function AdminDashboard() {
                                     <div className="space-y-4">
                                         <div>
                                             <label className="block text-[10px] font-bold text-ash uppercase tracking-widest mb-2 font-mono">Brand Name</label>
-                                            <input type="text" value={content.footerBrand} onChange={(e) => updateContent('footerBrand', e.target.value)} className="w-full px-4 py-3 bg-obsidian border border-white/10 focus:border-electric focus:outline-none text-white font-mono text-sm" />
+                                            <input type="text" value={content.footerBrand} onChange={(e: ChangeEvent<HTMLInputElement>) => updateContent('footerBrand', e.target.value)} className="w-full px-4 py-3 bg-obsidian border border-white/10 focus:border-electric focus:outline-none text-white font-mono text-sm" />
                                         </div>
                                         <div>
                                             <label className="block text-[10px] font-bold text-ash uppercase tracking-widest mb-2 font-mono">Footer Text</label>
-                                            <textarea value={content.footerDescription} onChange={(e) => updateContent('footerDescription', e.target.value)} rows={3} className="w-full px-4 py-3 bg-obsidian border border-white/10 focus:border-electric focus:outline-none text-ash-light text-sm resize-none" />
+                                            <textarea value={content.footerDescription} onChange={(e: ChangeEvent<HTMLTextAreaElement>) => updateContent('footerDescription', e.target.value)} rows={3} className="w-full px-4 py-3 bg-obsidian border border-white/10 focus:border-electric focus:outline-none text-ash-light text-sm resize-none" />
                                         </div>
                                         <div>
                                             <label className="block text-[10px] font-bold text-ash uppercase tracking-widest mb-3 font-mono">Academic Credentials</label>
                                             <div className="space-y-3">
-                                                {content.academicInfo.map((info, index) => (
-                                                    <input key={index} type="text" value={info} onChange={(e) => updateAcademicInfo(index, e.target.value)} className="w-full px-4 py-3 bg-obsidian border border-white/10 focus:border-electric focus:outline-none text-ash font-mono text-sm" placeholder={`Info Line ${index + 1}`} />
+                                                {content.academicInfo.map((info: string, index: number) => (
+                                                    <input key={index} type="text" value={info} onChange={(e: ChangeEvent<HTMLInputElement>) => updateAcademicInfo(index, e.target.value)} className="w-full px-4 py-3 bg-obsidian border border-white/10 focus:border-electric focus:outline-none text-ash font-mono text-sm" placeholder={`Info Line ${index + 1}`} />
                                                 ))}
                                             </div>
                                         </div>
@@ -436,11 +436,11 @@ export default function AdminDashboard() {
                                                             <button onClick={addExampleToTempRule} className="text-[10px] text-electric font-bold uppercase tracking-widest hover:underline">+ Add Example</button>
                                                         </div>
                                                         <div className="space-y-4">
-                                                            {tempRule.examples.map((ex, idx) => (
+                                                            {tempRule.examples.map((ex: Example, idx: number) => (
                                                                 <div key={idx} className="flex gap-3 items-start bg-white/5 p-3 border border-white/10">
                                                                     <div className="flex-1 space-y-2">
-                                                                        <input type="text" value={ex.expression} onChange={(e) => updateExampleInTempRule(idx, 'expression', e.target.value)} placeholder="LaTeX Expression" className="w-full px-3 py-2 bg-black/50 border border-white/10 focus:border-electric focus:outline-none text-white font-mono text-sm" />
-                                                                        <input type="text" value={ex.note || ''} onChange={(e) => updateExampleInTempRule(idx, 'note', e.target.value)} placeholder="Note (Optional)" className="w-full px-3 py-2 bg-black/50 border border-white/10 focus:border-electric focus:outline-none text-ash text-xs" />
+                                                                        <input type="text" value={ex.expression} onChange={(e: ChangeEvent<HTMLInputElement>) => updateExampleInTempRule(idx, 'expression', e.target.value)} placeholder="LaTeX Expression" className="w-full px-3 py-2 bg-black/50 border border-white/10 focus:border-electric focus:outline-none text-white font-mono text-sm" />
+                                                                        <input type="text" value={ex.note || ''} onChange={(e: ChangeEvent<HTMLInputElement>) => updateExampleInTempRule(idx, 'note', e.target.value)} placeholder="Note (Optional)" className="w-full px-3 py-2 bg-black/50 border border-white/10 focus:border-electric focus:outline-none text-ash text-xs" />
                                                                     </div>
                                                                     <button onClick={() => removeExampleFromTempRule(idx)} className="p-2 text-red-500 hover:bg-white/10"><Trash2 size={16} /></button>
                                                                 </div>
@@ -459,7 +459,7 @@ export default function AdminDashboard() {
 
                                     {/* Rules List */}
                                     <div className="space-y-4">
-                                        {rules.map((rule) => (
+                                        {rules.map((rule: Rule) => (
                                             <div key={rule.id} className="bg-white/5 border border-white/10 p-4 flex items-center justify-between hover:border-electric transition-colors group">
                                                 <div className="flex items-center gap-4">
                                                     <div className="p-3 bg-obsidian border border-white/10 group-hover:border-electric/50 text-ash group-hover:text-electric transition-colors">
