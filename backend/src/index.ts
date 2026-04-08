@@ -160,36 +160,47 @@ app.get('/soal/:materiId', async (c) => {
     try {
         const results = await db.select().from(schema.soal).where(eq(schema.soal.materiId, materiId)).all();
         return c.json(results);
-        // --- TTS PROXY ---
+    } catch (e) {
+        console.error(e);
+        return c.json({ error: 'Failed to fetch soal for materi' }, 500);
+    }
+});
 
-        app.get('/tts', async (c) => {
-            const text = c.req.query('text');
-            if (!text) return c.text('Missing text parameter', 400);
+// --- TTS PROXY ---
 
-            const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=id&client=tw-ob`;
+app.get('/tts', async (c) => {
+    const text = c.req.query('text');
+    if (!text) return c.text('Missing text parameter', 400);
 
-            try {
-                const response = await fetch(url, {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                    }
-                });
+    const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=id&client=tw-ob`;
 
-                if (!response.ok) {
-                    return c.text('Failed to fetch from Google TTS', response.status);
-                }
-
-                // Return the audio stream directly
-                return new Response(response.body, {
-                    headers: {
-                        'Content-Type': 'audio/mpeg',
-                        'Cache-Control': 'public, max-age=3600'
-                    }
-                });
-            } catch (e) {
-                console.error(e);
-                return c.text('Internal Server Error in TTS Proxy', 500);
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             }
         });
 
-        export default app;
+        if (!response.ok) {
+            return c.text('Failed to fetch from Google TTS', response.status);
+        }
+
+        // Return the audio stream with clear CORS and Security headers
+        return new Response(response.body, {
+            headers: {
+                'Content-Type': 'audio/mpeg',
+                'Cache-Control': 'public, max-age=3600',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                'X-Content-Type-Options': 'nosniff',
+                'Access-Control-Allow-Headers': 'Range',
+                'Access-Control-Expose-Headers': 'Content-Length, Content-Range'
+            }
+        });
+    } catch (e) {
+        console.error(e);
+        return c.text('Internal Server Error in TTS Proxy', 500);
+    }
+});
+
+export default app;

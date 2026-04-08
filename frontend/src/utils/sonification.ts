@@ -54,8 +54,10 @@ export async function playText(text: string, rate: number = 1.0) {
     // 2. STRATEGI UTAMA: Gunakan Cloud TTS Proxy (Suara "Mba Google" yang Jelas)
     try {
         const ttsUrl = `${API_URL}/tts?text=${encodeURIComponent(text)}`;
-        const audio = new Audio(ttsUrl);
-        currentAudio = audio;
+        const audio = new Audio();
+        audio.crossOrigin = 'anonymous'; // Penting untuk CORS pada media
+        audio.src = ttsUrl;
+        currentAudio = audio; // Simpan secara global agar tidak di-GC
 
         // Atur kecepatan jika didukung (HTMLAudioElement.playbackRate)
         audio.playbackRate = rate;
@@ -63,6 +65,10 @@ export async function playText(text: string, rate: number = 1.0) {
         console.log("[TTS] Mencoba memutar dari Cloud Proxy...");
 
         await new Promise((resolve, reject) => {
+            audio.oncanplaythrough = () => {
+                console.log("[TTS] Data suara siap diputar");
+                audio.play().catch(reject);
+            };
             audio.onplay = () => {
                 console.log("[TTS] Berhasil memutar dari Cloud Proxy (Google Voice)");
                 resolve(true);
@@ -71,7 +77,6 @@ export async function playText(text: string, rate: number = 1.0) {
                 console.warn("[TTS] Cloud Proxy gagal, beralih ke Browser TTS.", e);
                 reject(e);
             };
-            audio.play().catch(reject);
         });
 
         return; // Berhasil menggunakan Proxy
