@@ -21,7 +21,7 @@ app.get('/', (c) => {
 app.post('/login', async (c) => {
     const { username, password } = await c.req.json();
     const db = drizzle(c.env.DB, { schema });
-    
+
     try {
         const admin = await db.query.admins.findFirst({
             where: (admins, { and, eq }) => and(eq(admins.username, username), eq(admins.password, password)),
@@ -55,7 +55,7 @@ app.get('/rules', async (c) => {
         return c.json(parsedRules);
     } catch (e) {
         console.error(e);
-        return c.json([], 200); 
+        return c.json([], 200);
     }
 });
 
@@ -72,9 +72,9 @@ app.post('/rules', async (c) => {
         // we can use the underlying D1 batch or sequence them.
         // For simplicity and safety, we'll try to use a transaction-like approach if possible, 
         // but D1 doesn't support real transactions well outside of batch.
-        
+
         await db.delete(schema.rules).run();
-        
+
         if (rulesData.length > 0) {
             await db.insert(schema.rules).values(rulesData.map(r => ({
                 id: r.id,
@@ -160,10 +160,36 @@ app.get('/soal/:materiId', async (c) => {
     try {
         const results = await db.select().from(schema.soal).where(eq(schema.soal.materiId, materiId)).all();
         return c.json(results);
-    } catch (e) {
-        console.error(e);
-        return c.json({ error: 'Failed to fetch soal for materi' }, 500);
-    }
-});
+        // --- TTS PROXY ---
 
-export default app;
+        app.get('/tts', async (c) => {
+            const text = c.req.query('text');
+            if (!text) return c.text('Missing text parameter', 400);
+
+            const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=id&client=tw-ob`;
+
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    }
+                });
+
+                if (!response.ok) {
+                    return c.text('Failed to fetch from Google TTS', response.status);
+                }
+
+                // Return the audio stream directly
+                return new Response(response.body, {
+                    headers: {
+                        'Content-Type': 'audio/mpeg',
+                        'Cache-Control': 'public, max-age=3600'
+                    }
+                });
+            } catch (e) {
+                console.error(e);
+                return c.text('Internal Server Error in TTS Proxy', 500);
+            }
+        });
+
+        export default app;
