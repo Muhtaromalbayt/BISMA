@@ -55,31 +55,41 @@ export async function playText(text: string, rate: number = 1.0) {
     try {
         const ttsUrl = `${API_URL}/tts?text=${encodeURIComponent(text)}`;
         const audio = new Audio();
-        audio.crossOrigin = 'anonymous'; // Penting untuk CORS pada media
-        audio.src = ttsUrl;
-        currentAudio = audio; // Simpan secara global agar tidak di-GC
+        audio.crossOrigin = 'anonymous'; // Wajib untuk CORS pada elemen media
 
-        // Atur kecepatan jika didukung (HTMLAudioElement.playbackRate)
+        // Simpan referensi agar tidak di-GC oleh browser selama proses loading/playing
+        currentAudio = audio;
+
+        audio.src = ttsUrl;
         audio.playbackRate = rate;
 
         console.log("[TTS] Mencoba memutar dari Cloud Proxy...");
 
         await new Promise((resolve, reject) => {
+            // Gunakan event 'loadeddata' atau 'canplaythrough' sebelum memanggil play()
             audio.oncanplaythrough = () => {
-                console.log("[TTS] Data suara siap diputar");
+                console.log("[TTS] Data suara siap, memulai pemutaran...");
                 audio.play().catch(reject);
             };
+
             audio.onplay = () => {
-                console.log("[TTS] Berhasil memutar dari Cloud Proxy (Google Voice)");
+                console.log("[TTS] Sedang memutar suara...");
                 resolve(true);
             };
+
+            audio.onended = () => {
+                console.log("[TTS] Pemutaran selesai");
+                currentAudio = null;
+            };
+
             audio.onerror = (e) => {
-                console.warn("[TTS] Cloud Proxy gagal, beralih ke Browser TTS.", e);
+                console.warn("[TTS] Gagal memuat audio dari Cloud Proxy:", e);
+                currentAudio = null;
                 reject(e);
             };
         });
 
-        return; // Berhasil menggunakan Proxy
+        return;
     } catch (e) {
         // Fallback ke Web Speech API jika Proxy gagal
         playBrowserTTS(text, rate);
