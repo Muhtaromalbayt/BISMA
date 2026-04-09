@@ -51,7 +51,7 @@ export async function playText(text: string, rate: number = 1.0) {
         window.speechSynthesis.cancel();
     }
 
-    // 2. STRATEGI UTAMA: Gunakan Cloud TTS Proxy (Suara "Mba Google" yang Jelas)
+    // 2. STRATEGI UTAMA: Gunakan Microsoft Edge Neural TTS (Suara "Mba Gadis" yang Jelas)
     try {
         const ttsUrl = `${API_URL}/tts?text=${encodeURIComponent(text)}`;
         const audio = new Audio();
@@ -63,7 +63,7 @@ export async function playText(text: string, rate: number = 1.0) {
         audio.src = ttsUrl;
         audio.playbackRate = rate;
 
-        console.log("[TTS] Mencoba memutar dari Cloud Proxy...");
+        console.log("[TTS] Mencoba memutar dari Microsoft Neural Proxy...");
 
         await new Promise((resolve, reject) => {
             // Gunakan event 'loadeddata' atau 'canplaythrough' sebelum memanggil play()

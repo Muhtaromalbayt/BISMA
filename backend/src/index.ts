@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { drizzle } from 'drizzle-orm/d1';
 import { eq, asc } from 'drizzle-orm';
+import { UniversalEdgeTTS } from 'edge-tts-universal';
 import * as schema from './db/schema';
 
 type Bindings = {
@@ -166,27 +167,22 @@ app.get('/soal/:materiId', async (c) => {
     }
 });
 
-// --- TTS PROXY ---
+// --- TTS PROXY (Microsoft Edge Neural TTS) ---
 
 app.get('/tts', async (c) => {
     const text = c.req.query('text');
     if (!text) return c.text('Missing text parameter', 400);
 
-    const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=id&client=tw-ob`;
-
     try {
-        const response = await fetch(url, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            }
-        });
+        console.log(`[TTS] Request: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`);
+        
+        // Menggunakan id-ID-GadisNeural untuk suara perempuan yang sangat jernih dan natural
+        const tts = new UniversalEdgeTTS(text, 'id-ID-GadisNeural');
+        const { audio } = await tts.synthesize();
 
-        if (!response.ok) {
-            return c.text('Failed to fetch from Google TTS', response.status);
-        }
-
-        // Return the audio stream with clear CORS and Security headers
-        return new Response(response.body, {
+        // Convert Blob to ArrayBuffer for Response if needed, 
+        // though Response accepts Blob directly.
+        return new Response(audio, {
             headers: {
                 'Content-Type': 'audio/mpeg',
                 'Cache-Control': 'public, max-age=3600',
@@ -198,7 +194,7 @@ app.get('/tts', async (c) => {
             }
         });
     } catch (e) {
-        console.error(e);
+        console.error('[TTS Error]', e);
         return c.text('Internal Server Error in TTS Proxy', 500);
     }
 });
